@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { createRoot } from 'react-dom/client'
-import { Activity, AlertTriangle, Bot, Cloud, CreditCard, GitBranch, LayoutDashboard, Lock, Network, Rocket, Search, Shield, Server, Settings } from 'lucide-react'
+import { Activity, AlertTriangle, Bot, Cloud, CreditCard, GitBranch, LayoutDashboard, Lock, Menu, Network, Rocket, Search, Shield, Server, Settings, ShoppingCart, UserRound } from 'lucide-react'
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import '../app/styles.css'
 
@@ -93,18 +93,29 @@ function Login({ onLogin }: { onLogin: () => void }) {
 
 function Shell({ page, setPage, children }: { page: string; setPage: (p: string) => void; children: React.ReactNode }) {
   const nav = [
-    ['dashboard', LayoutDashboard, 'Dashboard'], ['connections', Cloud, 'Connections'], ['inventory', Server, 'Inventory'],
+    ['dashboard', LayoutDashboard, 'Home'], ['connections', Cloud, 'Clouds'], ['inventory', Server, 'Inventory'],
     ['topology', GitBranch, 'Topology'], ['deploy', Rocket, 'Deploy'], ['observability', Activity, 'Observability'],
-    ['ai', Bot, 'AI Assistant'], ['cost', CreditCard, 'Cost'], ['security', Shield, 'Security'], ['settings', Settings, 'Admin']
+    ['ai', Bot, 'AI'], ['cost', CreditCard, 'Cost'], ['security', Shield, 'Security'], ['settings', Settings, 'Admin']
   ] as const
   return (
     <div className="app">
-      <aside>
-        <div className="logo"><Cloud /> InfraSphere</div>
-        {nav.map(([id, Icon, label]) => <button className={page === id ? 'active' : ''} key={id} onClick={() => setPage(id)}><Icon size={17} />{label}</button>)}
-      </aside>
+      <div className="utilityBar">
+        <span>Enterprise Control Plane</span>
+        <span>Support</span>
+        <span>Audit Center</span>
+        <span>Change Approvals</span>
+      </div>
+      <header className="storeHeader">
+        <button className="menuButton" aria-label="Open navigation"><Menu size={22} /></button>
+        <button className="storeLogo" onClick={() => setPage('dashboard')}><Cloud size={28} />InfraSphere</button>
+        <div className="globalSearch"><Search size={18} /><input placeholder="Search resources, accounts, deployments, incidents, costs" /></div>
+        <button className="headerAction"><UserRound size={18} />Acme</button>
+        <button className="headerAction"><ShoppingCart size={18} />Approvals</button>
+      </header>
+      <nav className="categoryNav">
+        {nav.map(([id, Icon, label]) => <button className={page === id ? 'active' : ''} key={id} onClick={() => setPage(id)}><Icon size={16} />{label}</button>)}
+      </nav>
       <section className="workspace">
-        <header><div><b>Acme Platform Engineering</b><span>Unified hybrid and multi-cloud operations</span></div><button onClick={() => { localStorage.clear(); location.reload() }}>Sign out</button></header>
         {children}
       </section>
     </div>
@@ -123,7 +134,34 @@ function Dashboard() {
   useEffect(() => { api<Alert[]>('/api/observability/alerts').then(setAlerts).catch(console.error) }, [])
   const cost = resources.reduce((n, r) => n + r.costMonthly, 0)
   const chart = Object.entries(resources.reduce<Record<string, number>>((m, r) => ({ ...m, [r.provider]: (m[r.provider] ?? 0) + 1 }), {})).map(([provider, count]) => ({ provider, count }))
-  return <Page title="Dashboard" subtitle="Operational truth across cloud, private cloud, cost, security, and reliability.">
+  const departments = [
+    ['Inventory', Server, `${resources.length} resources`],
+    ['Cloud Accounts', Cloud, 'AWS, GCP, Azure, VCF'],
+    ['Security', Shield, '2 findings'],
+    ['Deployments', Rocket, 'Approval gated'],
+    ['Observability', Activity, `${alerts.length} alerts`],
+    ['AI Advisor', Bot, 'Read-only planning']
+  ] as const
+  return <Page title="Control Plane Home" subtitle="Shop your enterprise infrastructure like a unified catalog: discover, compare, optimize, secure, and deploy across every environment.">
+    <section className="hero">
+      <div>
+        <span className="dealTag">Today in operations</span>
+        <h2>One console for cloud inventory, cost, security, deployment, and AI-assisted triage.</h2>
+        <p>Bring AWS, GCP, Azure, VCF, observability, FinOps, and platform workflows into one high-clarity operating surface.</p>
+        <div className="heroActions">
+          <button><Cloud size={17} /> Connect cloud account</button>
+          <button className="secondary"><Bot size={17} /> Ask AI assistant</button>
+        </div>
+      </div>
+      <div className="heroDeal">
+        <b>Optimization Spotlight</b>
+        <strong>${Math.round(cost * 0.18).toLocaleString()}</strong>
+        <span>estimated monthly savings opportunity</span>
+      </div>
+    </section>
+    <div className="departmentGrid">
+      {departments.map(([label, Icon, meta]) => <button key={label} className="departmentTile"><Icon size={24} /><b>{label}</b><span>{meta}</span></button>)}
+    </div>
     <div className="kpis">
       <Kpi label="Resources" value={resources.length} icon={<Server />} />
       <Kpi label="Monthly cost" value={`$${cost.toLocaleString()}`} icon={<CreditCard />} />
@@ -229,7 +267,7 @@ function SettingsPage() {
 }
 
 function Page({ title, subtitle, children }: { title: string; subtitle: string; children: React.ReactNode }) {
-  return <main><div className="pageTitle"><h1>{title}</h1><p>{subtitle}</p></div>{children}</main>
+  return <main><div className="pageTitle"><div><h1>{title}</h1><p>{subtitle}</p></div><button onClick={() => { localStorage.clear(); location.reload() }}>Sign out</button></div>{children}</main>
 }
 function Kpi({ label, value, icon }: { label: string; value: React.ReactNode; icon: React.ReactNode }) { return <div className="kpi">{icon}<span>{label}</span><b>{value}</b></div> }
 function Panel({ title, children }: { title: string; children: React.ReactNode }) { return <section className="panel"><h2>{title}</h2>{children}</section> }
