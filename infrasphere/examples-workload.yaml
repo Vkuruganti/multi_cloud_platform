@@ -1,0 +1,28 @@
+apiVersion: infrasphere.io/v1
+kind: Workload
+metadata:
+  name: payments-api
+  environment: production
+spec:
+  provider: aws
+  target:
+    account: prod-aws
+    region: us-west-2
+    platform: eks
+  container:
+    image: ghcr.io/example/payments-api:v1.2.3
+    port: 8080
+  scaling:
+    minReplicas: 3
+    maxReplicas: 20
+    cpuTarget: 70
+  networking:
+    ingress: public
+    tls: true
+  observability:
+    metrics: true
+    logs: true
+    traces: true
+  cost:
+    monthlyBudget: 5000
+
