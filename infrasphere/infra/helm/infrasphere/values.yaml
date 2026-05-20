@@ -1,0 +1,11 @@
+image:
+  backend: infrasphere/backend:latest
+  frontend: infrasphere/frontend:latest
+postgres:
+  externalUrl: ""
+redis:
+  externalUrl: ""
+ingress:
+  enabled: false
+  host: infrasphere.local
+
